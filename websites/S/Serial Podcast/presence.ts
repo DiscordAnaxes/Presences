@@ -1,6 +1,6 @@
 const presence = new Presence({
-	clientId: "1056975576499499088",
-}),
+		clientId: "1056975576499499088",
+	}),
 	browsingTimestamp = Math.floor(Date.now() / 1000);
 
 function capitaliseFirstLetter(string: string) {
@@ -69,7 +69,7 @@ presence.on("UpdateData", async () => {
 		details: "Unsupported page",
 		smallImageKey: Assets.Reading,
 		smallImageText: strings.reading,
-		type: ActivityType.Listening
+		type: ActivityType.Listening,
 	};
 
 	if (privacy) {
@@ -85,8 +85,8 @@ presence.on("UpdateData", async () => {
 		presenceData.buttons = [
 			{
 				label: strings.buttonViewEpisode,
-				url: href
-			}
+				url: href,
+			},
 		];
 	} else if (
 		pathname.includes("/season") &&
@@ -107,16 +107,16 @@ presence.on("UpdateData", async () => {
 		}
 		presenceData.smallImageText = pathname.includes("season-three")
 			? document
-				.querySelector<HTMLElement>("header > div.episode")
-				?.outerText.trim()
-				?.replace("SEASON THREE", "Season Three:")
-				?.replace("EPISODE", "Episode")
+					.querySelector<HTMLElement>("header > div.episode")
+					?.outerText.trim()
+					?.replace("SEASON THREE", "Season Three:")
+					?.replace("EPISODE", "Episode")
 			: document
-				.querySelector("div.inner > div.episode")
-				?.textContent?.trim() ??
-			document
-				.querySelector("div.inner > div.inner-inner > div.episode")
-				?.textContent.trim();
+					.querySelector("div.inner > div.episode")
+					?.textContent?.trim() ??
+			  document
+					.querySelector("div.inner > div.inner-inner > div.episode")
+					?.textContent.trim();
 		presenceData.buttons = [
 			{
 				label: "View Episode",
@@ -142,8 +142,9 @@ presence.on("UpdateData", async () => {
 		)
 			?.split("About Season")[1]
 			.trim()}`;
-		presenceData.smallImageText = `${document.querySelectorAll("div.cards > div.node-episode").length
-			} Episodes`;
+		presenceData.smallImageText = `${
+			document.querySelectorAll("div.cards > div.node-episode").length
+		} Episodes`;
 		presenceData.buttons = [
 			{
 				label: "View Season",
@@ -182,7 +183,7 @@ presence.on("UpdateData", async () => {
 		presenceData.details = strings.viewing;
 		presenceData.state = document.querySelector("header > h1")?.textContent;
 		switch (
-		document.querySelector("div.field-items > div.field-item")?.textContent
+			document.querySelector("div.field-items > div.field-item")?.textContent
 		) {
 			case "Document": {
 				presenceData.buttons = [
@@ -259,9 +260,9 @@ presence.on("UpdateData", async () => {
 
 	if (!isNaN(podcast.duration)) {
 		const [startTimestamp, endTimestamp] = presence.getTimestamps(
-			presence.timestampFromFormat(document.querySelector("div.jp-current-time")?.textContent),
-			presence.timestampFromFormat(document.querySelector("div.jp-remaining")?.textContent?.split("-")[1])
-		),
+				Math.floor(podcast.currentTime),
+				Math.floor(podcast.duration)
+			),
 			episodeTitle = document.querySelector(
 				"div.player-header > div.title"
 			)?.textContent,
@@ -286,8 +287,8 @@ presence.on("UpdateData", async () => {
 					?.replace("episode", "")
 					?.replace(" ", "")
 					?.replace("0", "")}/${episodeTitle
-						?.replaceAll(" ", "-")
-						.toLowerCase()}`,
+					?.replaceAll(" ", "-")
+					.toLowerCase()}`,
 			},
 		];
 
