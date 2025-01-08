@@ -21,7 +21,7 @@
 		"shows"
 	],
 	"iframe": true,
-	"iFrameRegExp": ".*",
+	"iFrameRegExp": "ythd[.]org|vidlink[.]pro|embedme[.]top",
 	"settings": [
 		{
 			"id": "lang",

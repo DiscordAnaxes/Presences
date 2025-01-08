@@ -59,6 +59,10 @@ presence.on("UpdateData", async () => {
 			details: (await strings).home,
 			smallImageKey: Assets.Viewing,
 		},
+		"/today": {
+			details: "Viewing Airing Today",
+			smallImageKey: Assets.Viewing,
+		},
 	};
 
 	for (const [path, data] of Object.entries(pages))
@@ -135,6 +139,31 @@ presence.on("UpdateData", async () => {
 		];
 
 		if (video.paused) delete presenceData.endTimestamp;
+	} else if (pathname.includes("/person")) {
+		const profession = document.querySelectorAll(
+			"div.row.diz-title > span > a"
+		)[2]?.textContent;
+
+		presenceData.details = document.querySelector("div > h1")?.textContent;
+		presenceData.state = `Profession: ${
+			profession?.includes("Acting")
+				? profession?.replace("Acting", "Actor")
+				: profession
+		}`;
+		presenceData.largeImageKey = document
+			.querySelector("img.personposter")
+			?.getAttribute("src");
+		presenceData.smallImageKey = Assets.Logo;
+		presenceData.buttons = [
+			{
+				label: `View ${
+					profession?.includes("Acting")
+						? profession?.replace("Acting", "Actor")
+						: profession
+				}`,
+				url: href,
+			},
+		];
 	}
 
 	if (!showButtons && presenceData.buttons) delete presenceData.buttons;
