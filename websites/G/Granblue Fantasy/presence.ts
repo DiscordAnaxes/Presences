@@ -110,14 +110,12 @@ presence.on("UpdateData", async () => {
 			largeImageKey:
 				"https://cdn.rcd.gg/PreMiD/websites/G/Granblue%20Fantasy/assets/logo.png",
 			startTimestamp: browsingTimestamp,
-			largeImageText: "Granblue Fantasy",
 		},
 		{ href } = document.location,
-		[health, turn, djeeta, profile, button] = await Promise.all([
+		[health, turn, djeeta, button] = await Promise.all([
 			presence.getSetting<number>("health"),
 			presence.getSetting<number>("turn"),
 			presence.getSetting<boolean>("djeeta"),
-			presence.getSetting<boolean>("profile"),
 			presence.getSetting<boolean>("button"),
 		]);
 	let userData = await presence.getPageVariable<UserData>(
@@ -153,7 +151,11 @@ presence.on("UpdateData", async () => {
 	} else if (href.includes("/#result"))
 		presenceData.details = "In a Quest result screen";
 	else if (href.includes("/#raid") || href.includes("/#raid_multi")) {
-		const boss = gameStatus?.boss?.param.find(x => x.alive);
+		const bosses = gameStatus?.boss?.param.sort(
+				(a, b) => parseInt(b.hpmax) - parseInt(a.hpmax)
+			),
+			boss = bosses?.find(x => x.alive) || bosses?.[0];
+
 		if (boss) {
 			if (boss.name.ja !== boss.name.en)
 				presenceData.details = `${boss.name.en} (${boss.name.ja})`;
@@ -167,21 +169,21 @@ presence.on("UpdateData", async () => {
 				"Starting battle...";
 		}
 
-		if (health === 0) {
-			presenceData.state = `At ${
-				document.querySelectorAll(".btn-enemy-gauge.prt-enemy-percent.alive")[0]
-					.textContent
-			}`;
-		} else if (health === 1 && boss) {
-			const hp = parseInt(boss.hp);
-			presenceData.state = `${hp.toLocaleString()} [${(
-				(hp * 100) /
-				parseInt(boss.hpmax)
-			).toFixed(2)}%]`;
+		if (boss) {
+			const hp = parseInt(boss.hp),
+				percentage = (hp * 100) / parseInt(boss.hpmax);
+			if (health === 0) presenceData.state = `At ${Math.ceil(percentage)}%`;
+			else if (health === 1) {
+				presenceData.state = `${hp.toLocaleString()} [${percentage.toFixed(
+					2
+				)}%]`;
+			}
 		}
 
-		if (turn && gameStatus?.turn)
-			presenceData.state += ` | Turn ${gameStatus.turn}`;
+		if (turn && gameStatus?.turn) {
+			if (!presenceData.state) presenceData.state = `Turn ${gameStatus.turn}`;
+			else presenceData.state += ` | Turn ${gameStatus.turn}`;
+		}
 
 		if (djeeta && gameStatus?.player) {
 			const charaAlive = gameStatus.player.param.find(x => x.leader);
@@ -189,9 +191,6 @@ presence.on("UpdateData", async () => {
 				presenceData.smallImageKey = ElementIcons[charaAlive.attr];
 				presenceData.smallImageText = ElementsNames[charaAlive.attr];
 				presenceData.largeImageKey = `${userData.imgUri}/sp/assets/leader/raid_normal/${charaAlive.pid}.jpg`;
-				presenceData.largeImageText = `${charaAlive.name} | ${
-					charaAlive.hp
-				} [${((charaAlive.hp * 100) / charaAlive.hpmax).toFixed(2)}%]`;
 			}
 		}
 	} else if (href.includes("/#party/index/0/npc/0"))
@@ -332,18 +331,13 @@ presence.on("UpdateData", async () => {
 	else if (href.includes("#frontier/alchemy"))
 		presenceData.details = "In Alchemy Lab";
 
-	if (userData?.userId) {
-		if (profile && presenceData.largeImageText === "Granblue Fantasy")
-			presenceData.largeImageText = `UID: ${userData.userId} | Rank ${userData.userRank}`;
-
-		if (button) {
-			presenceData.buttons = [
-				{
-					label: "Profile",
-					url: `${userData.baseUri}/#profile/${userData.userId}`,
-				},
-			];
-		}
+	if (userData?.userId && button) {
+		presenceData.buttons = [
+			{
+				label: "Profile",
+				url: `${userData.baseUri}/#profile/${userData.userId}`,
+			},
+		];
 	}
 
 	presence.setActivity(presenceData);
